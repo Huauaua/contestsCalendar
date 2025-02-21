@@ -1,5 +1,5 @@
-# url = "https://codeforces.com/api/contest.list"  # 替换为实际的 URLimport json
-# url = "https://ac.nowcoder.com/acm/calendar/contest"
+# url = "https://codeforces.com/api/contest.list"  # codeforce官方API
+# url = "https://ac.nowcoder.com/acm/calendar/contest" # nowcoder官方API
 import json, os, requests
 from time import sleep
 from datetime import datetime, timezone, timedelta
@@ -8,7 +8,7 @@ from colorama import init, Fore
 # 初始化 colorama
 init(autoreset=True)
 
-def convert_timestamp_to_beijing(timestamp):
+def convert_timestamp_to_beijing(timestamp): # 转换时区为北京时间
     beijing_time = datetime.fromtimestamp(timestamp, tz=timezone.utc).astimezone(timezone(timedelta(hours=8)))
     print(f"{Fore.CYAN}[DEBUG] Original timestamp: {timestamp}, Beijing time: {beijing_time}")
     return beijing_time
@@ -101,114 +101,19 @@ def save_to_json(contests, filename="contests.json"):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(existing_contests, f, indent=4, ensure_ascii=False)
     print(f"{Fore.GREEN}[DEBUG] Saving contests to {file_path}")
-
+    
+# 主程序入口，用于抓取比赛信息并保存到桌面的 JSON 文件中
 if __name__ == "__main__":
     print(f"{Fore.GREEN}[DEBUG] Starting contest fetching process")
-    cf_contests = get_codeforces_contests()
+    cf_contests = get_codeforces_contests()  # 获取 Codeforces 比赛信息
     if cf_contests:
-        save_to_json(cf_contests)
+        save_to_json(cf_contests)  # 保存 Codeforces 比赛信息到 JSON 文件
     else:
         print(f"{Fore.YELLOW}[DEBUG] No ongoing or upcoming Codeforces contests found.")
-    nc_contests = get_nowcoder_contests()
+    nc_contests = get_nowcoder_contests()  # 获取牛客网比赛信息
     if nc_contests:
-        save_to_json(nc_contests)
+        save_to_json(nc_contests)  # 保存牛客网比赛信息到 JSON 文件
     else:
         print(f"{Fore.YELLOW}[DEBUG] No ongoing or upcoming NowCoder contests found.")
     print(f"{Fore.GREEN}Done!!\n\n\n")
-    input()
-
-# import json
-# import requests
-# import os
-# from datetime import datetime,timezone,timedelta
-#
-# def convert_timestamp_to_beijing(timestamp):
-#     beijing_time = datetime.fromtimestamp(timestamp, tz=timezone.utc).astimezone(timezone(timedelta(hours=8)))
-#     return beijing_time
-#
-# def get_nowcoder_contests():
-#     url = "https://ac.nowcoder.com/acm/calendar/contest"
-#     response = requests.get(url)
-#     if response.status_code != 200:
-#         print("Failed to fetch contest data")
-#         return []
-#
-#     contests = response.json().get("data", [])
-#     filtered_contests = []
-#     now = convert_timestamp_to_beijing(datetime.now(timezone.utc).timestamp()).strftime('%Y-%m-%d')
-#     for contest in contests:
-#         d = convert_timestamp_to_beijing(contest["startTime"] / 1000).strftime('%Y-%m-%d')
-#         durationTime = (contest["endTime"] - contest["startTime"]) / 1000
-#         # print(timedelta(seconds=durationTime))
-#         if d < now:
-#             continue
-#         contest_info = {
-#             "id": contest["contestId"],
-#             "name": contest["contestName"],
-#             "startTime": convert_timestamp_to_beijing(contest["startTime"] / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-#             "type": contest["ojName"],
-#             "phase": "before",
-#             "durationSeconds": timedelta(seconds=durationTime),
-#         }
-#         filtered_contests.append(contest_info)
-#
-#     return filtered_contests
-#
-# def get_codeforces_contests():
-#     url = "https://codeforces.com/api/contest.list"
-#     response = requests.get(url)
-#     if response.status_code != 200:
-#         print("Failed to fetch contest data")
-#         return []
-#
-#     contests = response.json().get("result", [])
-#     filtered_contests = []
-#
-#     for contest in contests:
-#         if contest["phase"] != "BEFORE":
-#             continue
-#
-#         contest_info = {
-#             "id": contest["id"],
-#             "name": contest["name"],
-#             "startTime": convert_timestamp_to_beijing(contest["startTimeSeconds"]).strftime('%Y-%m-%d %H:%M:%S'),
-#             "type": contest["type"],
-#             "phase": contest["phase"],
-#             "durationSeconds": convert_timestamp_to_beijing(contest["durationSeconds"]).strftime('%H:%M:%S'),
-#         }
-#         filtered_contests.append(contest_info)
-#
-#     return filtered_contests
-#
-#
-# def save_to_json(contests, filename="contests.json"):
-#     desktop_path = os.path.join(os.path.expanduser('~'), "desktop/")
-#     file_path = os.path.join(desktop_path, filename)
-#     try:
-#         with open(file_path, "r", encoding="utf-8") as f:
-#             existing_contests = json.load(f)
-#     except (FileNotFoundError, json.JSONDecodeError):
-#         existing_contests = []
-#
-#     existing_ids = {contest['id'] for contest in existing_contests}# 过滤掉重复的比赛，只保留新的比赛
-#     new_contests = [contest for contest in contests if contest['id'] not in existing_ids]
-#
-#     existing_contests.extend(new_contests)
-#     existing_contests.sort(key=lambda x: datetime.fromisoformat(x['startTime']))
-#
-#     with open(file_path, "w", encoding="utf-8") as f:
-#         json.dump(existing_contests, f, indent=4, ensure_ascii=False)
-#     print(f"Contests saved to {filename}")
-#
-# if __name__ == "__main__":
-#     cf_contests = get_codeforces_contests()
-#     if cf_contests:
-#         save_to_json(cf_contests)
-#     else:
-#         print("No ongoing or upcoming contests found.")
-#     nc_contests = get_nowcoder_contests()
-#     if nc_contests:
-#         save_to_json(nc_contests)
-#     else:
-#         print("No ongoing or upcoming contests found.")
-#     # print(nc_contests)
+    input()  # 等待用户输入，防止程序直接退出
